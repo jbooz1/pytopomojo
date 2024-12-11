@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pytopomojo",
-    version="0.1.1",
+    version="0.1.2",
     description="A TopoMojo API Client",
     url="https://github.com/jbooz1/pytopomojo",
     packages=find_packages(),
