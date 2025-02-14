@@ -313,6 +313,21 @@ class Topomojo:
             raise TopomojoException(response.status_code, response.text)
 
 
+    def download_workspaces(self, workspace_ids: List[str], output_file: str) -> None:
+        self.logger.debug(f"Downloading an export package for workspaces: {workspace_ids}")
+        
+        url = f"{self.app_url}/api/admin/download"        
+        response = self.session.post(url, json=workspace_ids, stream=True)
+        
+        if response.status_code == 200:
+            self.logger.debug(f"Saving export package to file: {output_file}")
+            with open(output_file, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    file.write(chunk)
+        else:
+            # If the request was not successful, raise a custom exception
+            raise TopomojoException(response.status_code, response.text)
+        
 
     ################################## GAMESPACE FUNCTIONS#####################################################################################
 
