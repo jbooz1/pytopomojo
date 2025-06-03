@@ -168,13 +168,17 @@ class Topomojo:
         if response.status_code == 200:
             # if wait is true, then wait for the disk to be done initializing before returning
             if wait:
-                while True: 
+                while True:
                     check = self.get_template(template_id)
-                    if check['task']:
-                        self.logger.debug(f"Initializing {check['task']['progress']}%")
+                    task = check.get('task')
+                    if task:
+                        self.logger.debug(f"Initializing {task['progress']}%")
                         sleep(1)
-                    else: 
-                        self.logger.debug(f"Done Initializing")
+                    else:
+                        if task is None:
+                            self.logger.debug("No initialization task found")
+                        else:
+                            self.logger.debug("Done Initializing")
                         break
             # Return the integer response
             return response.json()
