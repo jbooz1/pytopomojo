@@ -176,7 +176,7 @@ class Topomojo:
                     else: 
                         self.logger.debug(f"Done Initializing")
                         break
-            # Return the integer response
+            # Return the JSON response
             return response.json()
         else:
             # If the request was not successful, raise a custom exception
