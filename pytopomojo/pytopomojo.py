@@ -71,7 +71,7 @@ class Topomojo:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-    def update_template(self, changed_template:dict):
+    def update_template(self, changed_template: Dict[str, Any]):
         # Construct the full URL for the specific template
         full_url = f"{self.app_url}/api/template"
 
@@ -87,7 +87,7 @@ class Topomojo:
             raise TopomojoException(response.status_code, response.text)
 
 
-    def new_workspace_template(self, template_link_data:dict):
+    def new_workspace_template(self, template_link_data: Dict[str, Any]):
         # Construct the full URL
         full_url = self.app_url + '/api/template'
 
@@ -105,7 +105,7 @@ class Topomojo:
             raise TopomojoException(response.status_code, response.text)
         
 
-    def unlink_template(self, template_link_data:dict):
+    def unlink_template(self, template_link_data: Dict[str, Any]):
         # Construct the full URL
         full_url = self.app_url + '/api/template/unlink'
 
@@ -230,7 +230,7 @@ class Topomojo:
         else:
             raise TopomojoException(response.status_code, response.text)
 
-    def create_workspace(self, new_workspace_data:dict):
+    def create_workspace(self, new_workspace_data: Dict[str, Any]):
         # Construct the full URL
         full_url = self.app_url + '/api/workspace'
 
@@ -247,7 +247,7 @@ class Topomojo:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-    def update_workspace(self, workspace_id:str, changed_workspace_data:dict):
+    def update_workspace(self, workspace_id: str, changed_workspace_data: Dict[str, Any]):
         # Construct the full URL for the specific workspace
         full_url = f"{self.app_url}/api/workspace/{workspace_id}"
 
@@ -331,9 +331,9 @@ class Topomojo:
 
     ################################## GAMESPACE FUNCTIONS#####################################################################################
 
-    def get_gamespaces(self, WantsAll:bool=None, WantsActive:bool=None,
-                       Term: str=None, Skip:int=None, Take:int=None,
-                       Sort:str=None, Filter:list=None):
+    def get_gamespaces(self, WantsAll: bool = None, WantsActive: bool = None,
+                       Term: str = None, Skip: int = None, Take: int = None,
+                       Sort: str = None, Filter: List[str] = None):
         
         # Construct the full URL
         full_url = f"{self.app_url}/api/gamespaces"
