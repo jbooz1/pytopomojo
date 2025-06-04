@@ -297,7 +297,7 @@ class Topomojo:
             raise TopomojoException(response.status_code, response.text)
         
 
-    def export_workspace(self, ids: List[str]) -> None:
+    def export_workspaces(self, ids: List[str]) -> None:
         self.logger.debug(f"Exporting {len(ids)} workspaces with IDs: {ids}")
         # Construct the full URL
         full_url = f"{self.app_url}/api/admin/export"
@@ -311,6 +311,11 @@ class Topomojo:
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
+
+    def export_workspace(self, workspace_id: str) -> None:
+        """Export a single workspace by ID."""
+        self.logger.debug(f"Exporting workspace with ID: {workspace_id}")
+        self.export_workspaces([workspace_id])
 
 
     def download_workspaces(self, workspace_ids: List[str], output_file: str) -> None:
@@ -327,6 +332,11 @@ class Topomojo:
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
+
+    def download_workspace(self, workspace_id: str, output_file: str) -> None:
+        """Download a single workspace export package."""
+        self.logger.debug(f"Downloading an export package for workspace: {workspace_id}")
+        self.download_workspaces([workspace_id], output_file)
         
 
     ################################## GAMESPACE FUNCTIONS#####################################################################################
