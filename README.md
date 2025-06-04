@@ -15,4 +15,10 @@ from pytopomojo import Topomojo
 
 topomojo = Topomojo("<topomojo_url>", "<topomojo_api_key>")
 topomojo.get_workspaces()
+
+# Upload a workspace archive
+topomojo.upload_workspace("/path/to/workspace.zip")
+
+# Upload multiple workspace archives
+topomojo.upload_workspaces(["/path/one.zip", "/path/two.zip"])
 ```
