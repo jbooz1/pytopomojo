@@ -71,7 +71,7 @@ class Topomojo:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-    def update_template(self, changed_template:dict):
+    def update_template(self, changed_template: Dict[str, Any]):
         # Construct the full URL for the specific template
         full_url = f"{self.app_url}/api/template"
 
@@ -87,7 +87,7 @@ class Topomojo:
             raise TopomojoException(response.status_code, response.text)
 
 
-    def new_workspace_template(self, template_link_data:dict):
+    def new_workspace_template(self, template_link_data: Dict[str, Any]):
         # Construct the full URL
         full_url = self.app_url + '/api/template'
 
@@ -105,7 +105,7 @@ class Topomojo:
             raise TopomojoException(response.status_code, response.text)
         
 
-    def unlink_template(self, template_link_data:dict):
+    def unlink_template(self, template_link_data: Dict[str, Any]):
         # Construct the full URL
         full_url = self.app_url + '/api/template/unlink'
 
@@ -168,15 +168,19 @@ class Topomojo:
         if response.status_code == 200:
             # if wait is true, then wait for the disk to be done initializing before returning
             if wait:
-                while True: 
+                while True:
                     check = self.get_template(template_id)
-                    if check['task']:
-                        self.logger.debug(f"Initializing {check['task']['progress']}%")
+                    task = check.get('task')
+                    if task:
+                        self.logger.debug(f"Initializing {task['progress']}%")
                         sleep(1)
-                    else: 
-                        self.logger.debug(f"Done Initializing")
+                    else:
+                        if task is None:
+                            self.logger.debug("No initialization task found")
+                        else:
+                            self.logger.debug("Done Initializing")
                         break
-            # Return the integer response
+            # Return the JSON response
             return response.json()
         else:
             # If the request was not successful, raise a custom exception
@@ -230,7 +234,7 @@ class Topomojo:
         else:
             raise TopomojoException(response.status_code, response.text)
 
-    def create_workspace(self, new_workspace_data:dict):
+    def create_workspace(self, new_workspace_data: Dict[str, Any]):
         # Construct the full URL
         full_url = self.app_url + '/api/workspace'
 
@@ -247,7 +251,7 @@ class Topomojo:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-    def update_workspace(self, workspace_id:str, changed_workspace_data:dict):
+    def update_workspace(self, workspace_id: str, changed_workspace_data: Dict[str, Any]):
         # Construct the full URL for the specific workspace
         full_url = f"{self.app_url}/api/workspace/{workspace_id}"
 
@@ -297,7 +301,7 @@ class Topomojo:
             raise TopomojoException(response.status_code, response.text)
         
 
-    def export_workspace(self, ids: List[str]) -> None:
+    def export_workspaces(self, ids: List[str]) -> None:
         self.logger.debug(f"Exporting {len(ids)} workspaces with IDs: {ids}")
         # Construct the full URL
         full_url = f"{self.app_url}/api/admin/export"
@@ -311,6 +315,11 @@ class Topomojo:
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
+
+    def export_workspace(self, workspace_id: str) -> None:
+        """Export a single workspace by ID."""
+        self.logger.debug(f"Exporting workspace with ID: {workspace_id}")
+        self.export_workspaces([workspace_id])
 
 
     def download_workspaces(self, workspace_ids: List[str], output_file: str) -> None:
@@ -327,6 +336,11 @@ class Topomojo:
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
+    
+    def download_workspace(self, workspace_id: str, output_file: str) -> None:
+        """Download a single workspace export package."""
+        self.logger.debug(f"Downloading an export package for workspace: {workspace_id}")
+        self.download_workspaces([workspace_id], output_file)
 
     def upload_workspace(self, archive_path: str) -> List[str]:
         """Upload a single workspace export package.
@@ -376,9 +390,9 @@ class Topomojo:
 
     ################################## GAMESPACE FUNCTIONS#####################################################################################
 
-    def get_gamespaces(self, WantsAll:bool=None, WantsActive:bool=None,
-                       Term: str=None, Skip:int=None, Take:int=None,
-                       Sort:str=None, Filter:list=None):
+    def get_gamespaces(self, WantsAll: bool = None, WantsActive: bool = None,
+                       Term: str = None, Skip: int = None, Take: int = None,
+                       Sort: str = None, Filter: List[str] = None):
         
         # Construct the full URL
         full_url = f"{self.app_url}/api/gamespaces"
