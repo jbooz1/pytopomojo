@@ -324,8 +324,8 @@ class Topomojo:
 
     def download_workspaces(self, workspace_ids: List[str], output_file: str) -> None:
         self.logger.debug(f"Downloading an export package for workspaces: {workspace_ids}")
-        
-        url = f"{self.app_url}/api/admin/download"        
+
+        url = f"{self.app_url}/api/admin/download"
         response = self.session.post(url, json=workspace_ids, stream=True)
         
         if response.status_code == 200:
@@ -336,11 +336,56 @@ class Topomojo:
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
-
+    
     def download_workspace(self, workspace_id: str, output_file: str) -> None:
         """Download a single workspace export package."""
         self.logger.debug(f"Downloading an export package for workspace: {workspace_id}")
         self.download_workspaces([workspace_id], output_file)
+
+    def upload_workspace(self, archive_path: str) -> List[str]:
+        """Upload a single workspace export package.
+
+        Parameters
+        ----------
+        archive_path: str
+            Path to a workspace zip file created via ``export_workspace``.
+
+        Returns
+        -------
+        List[str]
+            Identifiers for the uploaded workspaces as returned by the API.
+        """
+
+        self.logger.debug(f"Uploading workspace archive: {archive_path}")
+
+        url = f"{self.app_url}/api/admin/upload"
+
+        with open(archive_path, "rb") as archive:
+            response = self.session.post(url, files={"files": archive})
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise TopomojoException(response.status_code, response.text)
+
+    def upload_workspaces(self, archive_paths: List[str]) -> List[str]:
+        """Upload multiple workspace export packages.
+
+        Parameters
+        ----------
+        archive_paths: List[str]
+            List of paths to workspace zip files to upload.
+
+        Returns
+        -------
+        List[str]
+            Aggregated list of identifiers returned for each uploaded workspace.
+        """
+
+        uploaded_ids: List[str] = []
+        for path in archive_paths:
+            uploaded_ids.extend(self.upload_workspace(path))
+        return uploaded_ids
         
 
     ################################## GAMESPACE FUNCTIONS#####################################################################################
