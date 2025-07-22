@@ -479,7 +479,7 @@ class Topomojo:
             with open(output_file, 'wb') as file:
                 for chunk in response.iter_content(chunk_size=8192):
                     file.write(chunk)
-            return response.json()
+            return True
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
