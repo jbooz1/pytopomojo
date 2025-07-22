@@ -1,3 +1,13 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytopomojo"
+version = "0.0.0"  # Will be replaced by GitHub tag at build time
+description = "Python wrapper for TopoMojo API"
+authors = [{ name = "Jarrett Booz" }]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = []
