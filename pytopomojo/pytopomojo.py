@@ -354,25 +354,63 @@ class Topomojo:
     def update_workspace(self, workspace_id: str, changed_workspace_data: Dict[str, Any]):
         """Modify an existing workspace.
 
-        Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
+        Server behavior: the `PUT /api/workspace` endpoint expects a full
+        `RestrictedChangedWorkspace` payload and requires `name` to be present.
+        To allow callers to pass only changed fields, this function:
+        - Loads the current workspace via `GET /api/workspace/{id}`.
+        - Merges unspecified fields from the current workspace into the payload.
+        - Sends a `PUT` to `/api/workspace` with `id` plus merged fields.
 
-        Raises: TopoMojoException
+        Allowed fields merged/sent: `name`, `description`, `tags`, `author`, `audience`.
+        To clear a field, provide it explicitly (e.g., empty string) if allowed by the API.
+
+        Returns an empty dict on success (200), otherwise raises TopomojoException.
         """
 
-        # Construct the full URL for the specific workspace
-        full_url = f"{self.app_url}/api/workspace/{workspace_id}"
+        full_url = f"{self.app_url}/api/workspace"
 
-        self.logger.debug(f"Updating workspace {workspace_id} with content {changed_workspace_data}")
+        changes = dict(changed_workspace_data) if changed_workspace_data is not None else {}
 
-        # Make a PUT request to the API endpoint with the provided changed_workspace_data
-        response = self.session.put(full_url, json=changed_workspace_data)
+        # Prepare base payload with required id
+        payload: Dict[str, Any] = {'id': workspace_id}
 
-        # Check if the request was successful (status code 200)
+        # Fields allowed by RestrictedChangedWorkspace
+        allowed_fields = ["name", "description", "tags", "author", "audience"]
+
+        # Try to load existing workspace to preserve unspecified fields
+        current: Dict[str, Any] = {}
+        try:
+            load_resp = self.session.get(f"{self.app_url}/api/workspace/{workspace_id}")
+            if load_resp.status_code == 200:
+                current = load_resp.json() or {}
+            else:
+                self.logger.debug(
+                    f"Could not load current workspace {workspace_id} (status {load_resp.status_code}); "
+                    f"will require 'name' in changes."
+                )
+        except Exception as e:
+            self.logger.debug(f"Error loading current workspace {workspace_id}: {e}")
+
+        # Merge: explicit changes take precedence; otherwise fall back to current values
+        for field in allowed_fields:
+            if field in changes:
+                payload[field] = changes[field]
+            elif current and field in current:
+                payload[field] = current[field]
+
+        # Ensure required 'name' is present when we couldn't load current
+        if 'name' not in payload or payload['name'] is None or (isinstance(payload['name'], str) and payload['name'].strip() == ''):
+            if 'name' not in changes and not current:
+                raise ValueError("Workspace name is required for update and could not be loaded from server.")
+
+        self.logger.debug(f"Updating workspace {workspace_id} with payload {payload}")
+
+        response = self.session.put(full_url, json=payload)
+
         if response.status_code == 200:
-            # Return the JSON response (might be empty for successful updates)
-            return response.json()
+            # Server returns empty 200 on success
+            return {}
         else:
-            # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
 
