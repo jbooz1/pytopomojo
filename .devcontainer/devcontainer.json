@@ -36,6 +36,7 @@
       "settings": {
         "editor.formatOnSave": true,
         "files.insertFinalNewline": true,
+        "files.eol": "\n",
         "files.trimTrailingWhitespace": true,
         "python.defaultInterpreterPath": "/usr/local/bin/python",
         "python.analysis.typeCheckingMode": "basic",
