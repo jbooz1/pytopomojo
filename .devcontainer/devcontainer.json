@@ -13,7 +13,8 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "remoteUser": "vscode",
   "mounts": [
-    "source=pytopomojo-pip-cache,target=/home/vscode/.cache/pip,type=volume"
+    "source=pytopomojo-pip-cache,target=/home/vscode/.cache/pip,type=volume",
+    "source=${localEnv:HOME}/.ssh/config,target=/home/vscode/.ssh/config,type=bind,readonly"
   ],
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"

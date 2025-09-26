@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Ensure SSH config directory exists (for mounted config)
+mkdir -p "$HOME/.ssh"
+
 # Show git dirty status in zsh prompt
 git config devcontainers-theme.show-dirty 1
 
