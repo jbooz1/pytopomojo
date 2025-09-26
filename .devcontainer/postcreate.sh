@@ -5,7 +5,7 @@ set -euo pipefail
 git config devcontainers-theme.show-dirty 1
 
 # oh-my-zsh plugins
-sed -i 's/^\(\s*plugins=(.*\)\s*)/\1 python pyenv pip git)/' $HOME/.zshrc
+sed -i 's/^\(\s*plugins=(.*\)\s*)/\1 python pyenv pip)/' $HOME/.zshrc
 
 # Setup pure prompt
 sudo npm install --global pure-prompt
@@ -19,5 +19,5 @@ prompt pure
 
 EOF
 
-# install pip packages
-pip install --no-cache-dir -e .
+# install project in editable mode using system Python
+sudo python -m pip install --no-cache-dir -e .
