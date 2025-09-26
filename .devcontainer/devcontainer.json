@@ -18,11 +18,7 @@
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"
   },
-  "postCreateCommand": [
-    "bash",
-    "-lc",
-    ".devcontainer/postcreate.sh"
-  ],
+  "postCreateCommand": ["bash", "-lc", ".devcontainer/postcreate.sh"],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -31,7 +27,7 @@
         "ms-toolsai.jupyter",
         "ms-python.isort",
         "esbenp.prettier-vscode",
-        "openai.openai-chatgpt"
+        "openai.chatgpt"
       ],
       "settings": {
         "editor.formatOnSave": true,
