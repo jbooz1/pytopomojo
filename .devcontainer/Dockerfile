@@ -19,6 +19,8 @@ ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt \
     REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
     PIP_CERT=/etc/ssl/certs/ca-certificates.crt
 
+ENV NPM_CONFIG_PREFIX=/usr/local
+
 # Install packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -42,10 +44,6 @@ COPY pytopomojo/requirements.txt /tmp/pip-build/requirements.txt
 
 RUN python -m pip install --no-cache-dir -r /tmp/pip-build/requirements.txt \
     && rm -rf /tmp/pip-build
-
-# Install prettier
-RUN npm install -g prettier @prettier/plugin-python \
-    && npm cache clean --force
 
 # Switch back to vscode user
 USER vscode

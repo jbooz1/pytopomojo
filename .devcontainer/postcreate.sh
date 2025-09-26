@@ -8,7 +8,8 @@ git config devcontainers-theme.show-dirty 1
 sed -i 's/^\(\s*plugins=(.*\)\s*)/\1 python pyenv pip)/' $HOME/.zshrc
 
 # Setup pure prompt
-sudo npm install --global pure-prompt
+# Using npm prefix /usr/local to avoid conflicting with system-managed node_modules
+sudo npm install --global --prefix /usr/local pure-prompt
 sed -i "s|^ZSH_THEME=.*|ZSH_THEME=\"\"\n\nFPATH=$(npm root -g)/pure-prompt/functions:\$FPATH|" $HOME/.zshrc
 
 cat >>$HOME/.zshrc <<'EOF'
