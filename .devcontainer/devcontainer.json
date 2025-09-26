@@ -9,8 +9,8 @@
       "configureZshAsDefaultShell": true
     }
   },
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "remoteUser": "vscode",
   "mounts": [
     "source=pytopomojo-pip-cache,target=/home/vscode/.cache/pip,type=volume"
@@ -18,7 +18,11 @@
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"
   },
-  "postCreateCommand": "bash -l .devcontainer/postcreate.sh",
+  "postCreateCommand": [
+    "bash",
+    "-lc",
+    ".devcontainer/postcreate.sh"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [

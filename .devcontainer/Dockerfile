@@ -1,31 +1,25 @@
 # syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+FROM mcr.microsoft.com/devcontainers/python:3.13-bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        software-properties-common \
         ca-certificates \
         curl \
         gnupg \
-        dirmngr \
-        lsb-release \
         build-essential \
-        nodejs \
-        npm \
-    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x bullseye main" > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        python3.13 \
-        python3.13-venv \
-        python3.13-dev \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH=/opt/venv/bin:$PATH
 
-RUN python3.13 -m venv "$VIRTUAL_ENV" \
+RUN python -m venv "$VIRTUAL_ENV" \
     && "$VIRTUAL_ENV/bin/pip" install --no-cache-dir --upgrade pip setuptools wheel isort \
     && chown -R vscode:vscode "$VIRTUAL_ENV"
 
@@ -41,4 +35,4 @@ RUN npm install -g prettier @prettier/plugin-python \
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR /workspace
+WORKDIR /workspaces
