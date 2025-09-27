@@ -6,6 +6,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Switch to root for configuring image
 USER root
 
+# Prepare shared SSH agent directory for runtime symlink
+RUN mkdir -p /ssh-agent \
+    && chown vscode:vscode /ssh-agent
+
 # Custom Cert Support
 COPY .devcontainer/certs/ /usr/local/share/ca-certificates/custom/
 
