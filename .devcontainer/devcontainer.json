@@ -14,12 +14,17 @@
   "remoteUser": "vscode",
   "mounts": [
     "source=pytopomojo-pip-cache,target=/home/vscode/.cache/pip,type=volume",
-    "source=${localEnv:HOME}/.ssh/config,target=/home/vscode/.ssh/config,type=bind,readonly"
+    "source=${localEnv:HOME}/.ssh/config,target=/home/vscode/.ssh/config,type=bind,readonly",
+    "source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent/host-agent.sock,type=bind,consistency=cached,readonly"
   ],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "/ssh-agent/proxy.sock"
+  },
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"
   },
   "postCreateCommand": ["bash", "-lc", ".devcontainer/postcreate.sh"],
+  "postStartCommand": ["bash", "-lc", ".devcontainer/scripts/prepare-ssh-agent.sh"],
   "customizations": {
     "vscode": {
       "extensions": [
