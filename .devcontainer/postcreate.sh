@@ -21,4 +21,4 @@ prompt pure
 EOF
 
 # install project in editable mode using system Python
-sudo python -m pip install --no-cache-dir -e .
+python -m pip install --no-cache-dir -e .
