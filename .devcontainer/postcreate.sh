@@ -22,3 +22,6 @@ EOF
 
 # install project in editable mode using system Python
 python -m pip install --no-cache-dir -e .
+
+sudo cp /tmp/host_ssh_config /home/vscode/.ssh/config
+sudo chown vscode:vscode /home/vscode/.ssh/config
