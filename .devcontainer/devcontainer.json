@@ -13,7 +13,6 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "remoteUser": "vscode",
   "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/config,target=/tmp/host_ssh_config,type=bind,consistency=cached",
     "source=pytopomojo-pip-cache,target=/home/vscode/.cache/pip,type=volume"
   ],
   "containerEnv": {
