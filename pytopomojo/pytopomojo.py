@@ -1,24 +1,25 @@
 import requests
 import logging
 from time import sleep
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 class TopomojoException(Exception):
     """Exception raised when the TopoMojo API returns an error."""
 
-    def __init__(self, status_code, response_message):
+    def __init__(self, status_code, response_message) -> None:
         """Initialize the exception with a status code and API message."""
 
         self.status_code = status_code
         self.response_message = response_message
-        super().__init__(f"Topomojo API Error - Status Code: {status_code}, Response: {response_message}")
+        super().__init__(
+            f"Topomojo API Error - Status Code: {status_code}, Response: {response_message}")
 
 
 class Topomojo:
     """Client for interacting with a TopoMojo instance."""
 
-    def __init__(self, app_url, api_key, debug:bool=False):
+    def __init__(self, app_url, api_key, debug: bool = False) -> None:
         """Create a new :class:`Topomojo` client.
 
         Parameters
@@ -34,7 +35,8 @@ class Topomojo:
         self.app_url = app_url
         self.api_key = api_key
         self.session = requests.Session()
-        self.session.headers.update({'accept': 'application/json', 'x-api-key': api_key})
+        self.session.headers.update(
+            {'accept': 'application/json', 'x-api-key': api_key})
 
         # Setup logger
         self.logger = logging.getLogger(__name__)
@@ -46,21 +48,34 @@ class Topomojo:
             ch.setLevel(logging.DEBUG)
 
             # Create formatter
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            formatter = logging.Formatter(
+                '%(asctime)s - %(levelname)s - %(message)s')
 
             # Add formatter to ch
             ch.setFormatter(formatter)
 
             # Add ch to logger
             self.logger.addHandler(ch)
-            self.logger.debug("Topomojo class initialized with logging enabled")
+            self.logger.debug(
+                "Topomojo class initialized with logging enabled")
         else:
             self.logger.disabled = True
+
+    def _json_or_none(self, response: requests.Response) -> Optional[Any]:
+        """Return JSON payload or None when the response body is empty."""
+
+        if not response.content:
+            return None
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise TopomojoException(
+                response.status_code, response.text) from exc
 
     ################################## TEMPLATE FUNCTIONS#####################################################################################
     def get_templates(self, WantsAudience=None, WantsPublished=None, WantsParents=None,
                       aud=None, pid=None, sib=None, Term=None,
-                      Skip=None, Take=None, Sort=None, Filter=None):
+                      Skip=None, Take=None, Sort=None, Filter=None) -> Optional[Any]:
         """Get templates from TopoMojo.
 
         Parameters correspond to the query arguments documented by the
@@ -94,13 +109,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def update_template(self, changed_template: Dict[str, Any]):
+    def update_template(self, changed_template: Dict[str, Any]) -> Optional[Any]:
         """Update an existing template with new data that is passed directly to the TopoMojo API.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -117,13 +131,12 @@ class Topomojo:
 
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def new_workspace_template(self, template_link_data: Dict[str, Any]):
+    def new_workspace_template(self, template_link_data: Dict[str, Any]) -> Optional[Any]:
         """Add a template to a workspace.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -142,13 +155,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def unlink_template(self, template_link_data: Dict[str, Any]):
+    def unlink_template(self, template_link_data: Dict[str, Any]) -> Optional[Any]:
         """Unlink a template from a parent.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -166,13 +178,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def get_template(self, template_id):
+    def get_template(self, template_id) -> Optional[Any]:
         """Get a template by ID.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -191,13 +202,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def get_template_detail(self, template_id):
+    def get_template_detail(self, template_id) -> Optional[Any]:
         """Get full template details by ID.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -205,7 +215,8 @@ class Topomojo:
         Raises: TopoMojoException
         """
 
-        self.logger.debug(f"Loading template detail for template ID: {template_id}")
+        self.logger.debug(
+            f"Loading template detail for template ID: {template_id}")
         # Construct the full URL
         full_url = f"{self.app_url}/api/template-detail/{template_id}"
 
@@ -215,13 +226,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def initialize_template(self, template_id, wait=True):
+    def initialize_template(self, template_id, wait: bool = True) -> Optional[Any]:
         """Initialize a template after it has been unlinked.
         Optionally wait for completion.
 
@@ -255,13 +265,12 @@ class Topomojo:
                             self.logger.debug("Done Initializing")
                         break
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def deploy_vm_from_template(self, template_id):
+    def deploy_vm_from_template(self, template_id) -> Optional[Any]:
         """Deploy a VM from an existing template.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -280,18 +289,18 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
     ################################## WORKSPACE FUNCTIONS#####################################################################################
+
     def get_workspaces(self, aud: str = None, scope: str = None, doc: int = None,
-                    WantsAudience: bool = None, WantsManaged: bool = None,
-                    WantsDoc: bool = None, WantsPartialDoc: bool = None,
-                    Term: str = None, Skip: int = None, Take: int = None,
-                    Sort: str = None, Filter: List[str] = None) -> List[Dict[str, Any]]:
+                       WantsAudience: bool = None, WantsManaged: bool = None,
+                       WantsDoc: bool = None, WantsPartialDoc: bool = None,
+                       Term: str = None, Skip: int = None, Take: int = None,
+                       Sort: str = None, Filter: List[str] = None) -> Optional[List[Dict[str, Any]]]:
         """List workspaces matching the provided criteria.
 
         Parameters correspond to the query arguments documented by the
@@ -321,12 +330,11 @@ class Topomojo:
 
         response = self.session.get(full_url, params=params)
         if response.status_code == 200:
-            return response.json()
+            return self._json_or_none(response)
         else:
             raise TopomojoException(response.status_code, response.text)
 
-
-    def create_workspace(self, new_workspace_data: Dict[str, Any]):
+    def create_workspace(self, new_workspace_data: Dict[str, Any]) -> Optional[Any]:
         """Create a new workspace.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -345,13 +353,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def update_workspace(self, workspace_id: str, changed_workspace_data: Dict[str, Any]):
+    def update_workspace(self, workspace_id: str, changed_workspace_data: Dict[str, Any]) -> Optional[Any]:
         """Modify an existing workspace.
 
         Server behavior: the `PUT /api/workspace` endpoint expects a full
@@ -369,7 +376,8 @@ class Topomojo:
 
         full_url = f"{self.app_url}/api/workspace"
 
-        changes = dict(changed_workspace_data) if changed_workspace_data is not None else {}
+        changes = dict(
+            changed_workspace_data) if changed_workspace_data is not None else {}
 
         # Prepare base payload with required id
         payload: Dict[str, Any] = {'id': workspace_id}
@@ -380,16 +388,18 @@ class Topomojo:
         # Try to load existing workspace to preserve unspecified fields
         current: Dict[str, Any] = {}
         try:
-            load_resp = self.session.get(f"{self.app_url}/api/workspace/{workspace_id}")
+            load_resp = self.session.get(
+                f"{self.app_url}/api/workspace/{workspace_id}")
             if load_resp.status_code == 200:
-                current = load_resp.json() or {}
+                current = self._json_or_none(load_resp) or {}
             else:
                 self.logger.debug(
                     f"Could not load current workspace {workspace_id} (status {load_resp.status_code}); "
                     f"will require 'name' in changes."
                 )
         except Exception as e:
-            self.logger.debug(f"Error loading current workspace {workspace_id}: {e}")
+            self.logger.debug(
+                f"Error loading current workspace {workspace_id}: {e}")
 
         # Merge: explicit changes take precedence; otherwise fall back to current values
         for field in allowed_fields:
@@ -401,20 +411,20 @@ class Topomojo:
         # Ensure required 'name' is present when we couldn't load current
         if 'name' not in payload or payload['name'] is None or (isinstance(payload['name'], str) and payload['name'].strip() == ''):
             if 'name' not in changes and not current:
-                raise ValueError("Workspace name is required for update and could not be loaded from server.")
+                raise ValueError(
+                    "Workspace name is required for update and could not be loaded from server.")
 
-        self.logger.debug(f"Updating workspace {workspace_id} with payload {payload}")
+        self.logger.debug(
+            f"Updating workspace {workspace_id} with payload {payload}")
 
         response = self.session.put(full_url, json=payload)
 
         if response.status_code == 200:
-            # Server returns empty 200 on success
-            return {}
+            return self._json_or_none(response)
         else:
             raise TopomojoException(response.status_code, response.text)
 
-
-    def get_workspace_invite(self, workspace_id):
+    def get_workspace_invite(self, workspace_id) -> Optional[Any]:
         """Generate an invite code for a workspace.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -422,7 +432,8 @@ class Topomojo:
         Raises: TopoMojoException
         """
 
-        self.logger.debug(f"Generating invitation code for workspace ID: {workspace_id}")
+        self.logger.debug(
+            f"Generating invitation code for workspace ID: {workspace_id}")
         # Construct the full URL
         full_url = f"{self.app_url}/api/workspace/{workspace_id}/invite"
 
@@ -432,13 +443,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def delete_workspace(self, workspace_id):
+    def delete_workspace(self, workspace_id) -> Optional[Any]:
         """Delete a workspace.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -456,13 +466,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             self.logger.debug("Workspace deleted successfully")
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def export_workspaces(self, ids: List[str]) -> None:
+    def export_workspaces(self, ids: List[str]) -> Optional[Any]:
         """Export multiple workspaces by their IDs.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -480,13 +489,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             self.logger.debug("Workspaces exported successfully")
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def export_workspace(self, workspace_id: str):
+    def export_workspace(self, workspace_id: str) -> Optional[Any]:
         """Export a single workspace by ID.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -497,8 +505,7 @@ class Topomojo:
         self.logger.debug(f"Exporting workspace with ID: {workspace_id}")
         return self.export_workspaces([workspace_id])
 
-
-    def download_workspaces(self, workspace_ids: List[str], output_file: str) -> None:
+    def download_workspaces(self, workspace_ids: List[str], output_file: str) -> bool:
         """Download an export package containing one or more workspaces.
         All workspaces listed will be included in the same export package.
 
@@ -507,7 +514,8 @@ class Topomojo:
         Raises: TopoMojoException
         """
 
-        self.logger.debug(f"Downloading an export package for workspaces: {workspace_ids}")
+        self.logger.debug(
+            f"Downloading an export package for workspaces: {workspace_ids}")
 
         url = f"{self.app_url}/api/admin/download"
         response = self.session.post(url, json=workspace_ids, stream=True)
@@ -522,8 +530,7 @@ class Topomojo:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def download_workspace(self, workspace_id: str, output_file: str):
+    def download_workspace(self, workspace_id: str, output_file: str) -> bool:
         """Download a single workspace export package.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -531,11 +538,11 @@ class Topomojo:
         Raises: TopoMojoException
         """
 
-        self.logger.debug(f"Downloading an export package for workspace: {workspace_id}")
+        self.logger.debug(
+            f"Downloading an export package for workspace: {workspace_id}")
         return self.download_workspaces([workspace_id], output_file)
 
-
-    def upload_workspace(self, archive_path: str) -> List[str]:
+    def upload_workspace(self, archive_path: str) -> Optional[List[str]]:
         """Upload a single workspace export package.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -551,10 +558,9 @@ class Topomojo:
             response = self.session.post(url, files={"files": archive})
 
         if response.status_code == 200:
-            return response.json()
+            return self._json_or_none(response)
         else:
             raise TopomojoException(response.status_code, response.text)
-
 
     def upload_workspaces(self, archive_paths: List[str]) -> List[str]:
         """Upload multiple workspace export packages.
@@ -564,14 +570,16 @@ class Topomojo:
 
         uploaded_ids: List[str] = []
         for path in archive_paths:
-            uploaded_ids.extend(self.upload_workspace(path))
+            uploaded = self.upload_workspace(path)
+            if uploaded:
+                uploaded_ids.extend(uploaded)
         return uploaded_ids
 
-
     ################################## GAMESPACE FUNCTIONS#####################################################################################
+
     def get_gamespaces(self, WantsAll: bool = None, WantsActive: bool = None,
                        Term: str = None, Skip: int = None, Take: int = None,
-                       Sort: str = None, Filter: List[str] = None):
+                       Sort: str = None, Filter: List[str] = None) -> Optional[Any]:
         """List gamespaces available to the user.
 
         Parameters correspond to the query arguments documented by the
@@ -604,13 +612,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def stop_gamespace(self, gamespace_id:str):
+    def stop_gamespace(self, gamespace_id: str) -> Optional[Any]:
         """Stop a running gamespace.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -628,13 +635,12 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
 
-
-    def complete_gamespace(self, gamespace_id:str):
+    def complete_gamespace(self, gamespace_id: str) -> Optional[Any]:
         """Mark a gamespace as complete.
 
         Returns JSON from TopoMojo API if 200 OK was returned. Otherwise, raise a TopoMojo Exception.
@@ -652,7 +658,7 @@ class Topomojo:
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Return the JSON response
-            return response.json()
+            return self._json_or_none(response)
         else:
             # If the request was not successful, raise a custom exception
             raise TopomojoException(response.status_code, response.text)
