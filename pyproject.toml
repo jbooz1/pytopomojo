@@ -12,4 +12,5 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "requests>=2.25",
+    "pycdlib>=1.14",
 ]
