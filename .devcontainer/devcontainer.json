@@ -13,10 +13,17 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "remoteUser": "vscode",
   "mounts": [
-    "source=pytopomojo-pip-cache,target=/home/vscode/.cache/pip,type=volume"
+    "source=pytopomojo-pip-cache,target=/home/vscode/.cache/pip,type=volume",
+    // AWS credentials for Claude Code (optional)
+    "source=${localWorkspaceFolder}/.devcontainer/.aws,target=/home/vscode/.aws,type=bind",
+    // Claude Code data (sessions, history, todos, etc.)
+    "source=pytopomojo-claude,target=/home/vscode/.claude,type=volume"
   ],
   "containerEnv": {
-    "PIP_DISABLE_PIP_VERSION_CHECK": "1"
+    "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+    "CLAUDE_CODE_USE_BEDROCK": "1", // vars for Claude Code using Amazon Bedrock
+    "AWS_REGION": "us-east-1",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "us.anthropic.claude-haiku-4-5-20251001-v1:0"
   },
   "postCreateCommand": ["bash", "-lc", ".devcontainer/postcreate.sh"],
   "customizations": {
@@ -27,7 +34,8 @@
         "ms-toolsai.jupyter",
         "ms-python.isort",
         "esbenp.prettier-vscode",
-        "openai.chatgpt"
+        "Anthropic.claude-code",
+        "AmazonWebServices.aws-toolkit-vscode"
       ],
       "settings": {
         "editor.formatOnSave": true,

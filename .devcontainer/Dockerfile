@@ -47,4 +47,7 @@ RUN python -m pip install --no-cache-dir -r /tmp/pip-build/requirements.txt \
 # Switch back to vscode user
 USER vscode
 
+# Install Claude Code using native installer
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
 WORKDIR /workspaces
