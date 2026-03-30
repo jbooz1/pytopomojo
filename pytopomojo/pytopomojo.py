@@ -19,24 +19,30 @@ class TopomojoException(Exception):
 class Topomojo:
     """Client for interacting with a TopoMojo instance."""
 
-    def __init__(self, app_url, api_key, debug: bool = False) -> None:
+    def __init__(self, app_url: Optional[str] = None, api_key: Optional[str] = None, debug: bool = False) -> None:
         """Create a new :class:`Topomojo` client.
 
         Parameters
         ----------
-        app_url: str
+        app_url: str, optional
             Base URL to the TopoMojo application (e.g. ``https://example.com/topomojo``).
-        api_key: str
+            Falls back to the ``TOPOMOJO_URL`` environment variable if not provided.
+        api_key: str, optional
             API key used for authentication.
+            Falls back to the ``TOPOMOJO_API_KEY`` environment variable if not provided.
         debug: bool, optional
             When ``True`` debug logging is enabled.
         """
 
-        self.app_url = app_url
-        self.api_key = api_key
+        self.app_url = app_url if app_url is not None else os.environ.get("TOPOMOJO_URL")
+        self.api_key = api_key if api_key is not None else os.environ.get("TOPOMOJO_API_KEY")
+        if not self.app_url:
+            raise ValueError("app_url is required or set TOPOMOJO_URL environment variable")
+        if not self.api_key:
+            raise ValueError("api_key is required or set TOPOMOJO_API_KEY environment variable")
         self.session = requests.Session()
         self.session.headers.update(
-            {'accept': 'application/json', 'x-api-key': api_key})
+            {'accept': 'application/json', 'x-api-key': self.api_key})
 
         # Setup logger
         self.logger = logging.getLogger(__name__)

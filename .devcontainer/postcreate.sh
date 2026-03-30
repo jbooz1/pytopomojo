@@ -14,6 +14,12 @@ else
   git clone https://github.com/cmu-sei/TopoMojo.git /mnt/topomojo-api
 fi
 
+# Source local env vars if present
+ENV_FILE="$(pwd)/.devcontainer/.env"
+if ! grep -qF "$ENV_FILE" "$HOME/.zshrc"; then
+  echo "[ -f \"$ENV_FILE\" ] && source \"$ENV_FILE\"" >> "$HOME/.zshrc"
+fi
+
 # oh-my-zsh plugins
 sed -i 's/^\(\s*plugins=(.*\)\s*)/\1 python pyenv pip)/' $HOME/.zshrc
 
