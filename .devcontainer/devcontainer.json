@@ -19,7 +19,9 @@
     // Claude Code data (sessions, history, todos, etc.)
     "source=pytopomojo-claude,target=/home/vscode/.claude,type=volume",
     // TopoMojo API source
-    "source=pytopomojo-topomojo-api,target=/mnt/topomojo-api,type=volume"
+    "source=pytopomojo-topomojo-api,target=/mnt/topomojo-api,type=volume",
+    // Shell history
+    "source=pytopomojo-shell-history,target=/home/vscode/.history,type=volume"
   ],
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1",
@@ -27,7 +29,11 @@
     "AWS_REGION": "us-east-1",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "us.anthropic.claude-haiku-4-5-20251001-v1:0"
   },
-  "postCreateCommand": ["bash", "-lc", ".devcontainer/postcreate.sh"],
+  "postCreateCommand": [
+    "bash",
+    "-lc",
+    ".devcontainer/postcreate.sh"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -53,5 +59,7 @@
       }
     }
   },
-  "runArgs": ["--init"]
+  "runArgs": [
+    "--init"
+  ]
 }
