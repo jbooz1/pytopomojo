@@ -34,6 +34,11 @@
     "-lc",
     ".devcontainer/postcreate.sh"
   ],
+  "postStartCommand": [
+    "bash",
+    "-lc",
+    "ENV_FILE=$(pwd)/.devcontainer/.env; grep -qF \"$ENV_FILE\" ~/.zshenv 2>/dev/null || echo \"[ -f \\\"$ENV_FILE\\\" ] && source \\\"$ENV_FILE\\\"\" >> ~/.zshenv"
+  ],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -51,6 +56,7 @@
         "files.eol": "\n",
         "files.trimTrailingWhitespace": true,
         "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.envFile": "${workspaceFolder}/.devcontainer/.env",
         "python.analysis.typeCheckingMode": "basic",
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "[python]": {
