@@ -162,3 +162,7 @@ cython_debug/
 #.idea/
 # Devcontainer certificates
 .devcontainer/certs/*.crt
+
+openapi.json
+
+.claude/settings.local.json
