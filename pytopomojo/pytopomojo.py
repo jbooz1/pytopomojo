@@ -34,12 +34,14 @@ class Topomojo:
             When ``True`` debug logging is enabled.
         """
 
-        self.app_url = app_url if app_url is not None else os.environ.get("TOPOMOJO_URL")
-        self.api_key = api_key if api_key is not None else os.environ.get("TOPOMOJO_API_KEY")
-        if not self.app_url:
+        resolved_url = app_url if app_url is not None else os.environ.get("TOPOMOJO_URL")
+        resolved_key = api_key if api_key is not None else os.environ.get("TOPOMOJO_API_KEY")
+        if not resolved_url:
             raise ValueError("app_url is required or set TOPOMOJO_URL environment variable")
-        if not self.api_key:
+        if not resolved_key:
             raise ValueError("api_key is required or set TOPOMOJO_API_KEY environment variable")
+        self.app_url = resolved_url
+        self.api_key = resolved_key
         self.session = requests.Session()
         self.session.headers.update(
             {'accept': 'application/json', 'x-api-key': self.api_key})
