@@ -1,7 +1,14 @@
+import os
+import re
+import uuid
+import tempfile
 import requests
 import logging
+import pycdlib
+from io import BytesIO
 from time import sleep
 from typing import List, Dict, Any, Optional
+from urllib.parse import urlencode
 
 
 class TopomojoException(Exception):
@@ -262,7 +269,7 @@ class Topomojo:
             if wait:
                 while True:
                     check = self.get_template(template_id)
-                    task = check.get('task')
+                    task = check.get('task') if check is not None else None
                     if task:
                         self.logger.debug(f"Initializing {task['progress']}%")
                         sleep(1)
@@ -304,11 +311,11 @@ class Topomojo:
 
     ################################## WORKSPACE FUNCTIONS#####################################################################################
 
-    def get_workspaces(self, aud: str = None, scope: str = None, doc: int = None,
-                       WantsAudience: bool = None, WantsManaged: bool = None,
-                       WantsDoc: bool = None, WantsPartialDoc: bool = None,
-                       Term: str = None, Skip: int = None, Take: int = None,
-                       Sort: str = None, Filter: List[str] = None) -> Optional[List[Dict[str, Any]]]:
+    def get_workspaces(self, aud: Optional[str] = None, scope: Optional[str] = None, doc: Optional[int] = None,
+                       WantsAudience: Optional[bool] = None, WantsManaged: Optional[bool] = None,
+                       WantsDoc: Optional[bool] = None, WantsPartialDoc: Optional[bool] = None,
+                       Term: Optional[str] = None, Skip: Optional[int] = None, Take: Optional[int] = None,
+                       Sort: Optional[str] = None, Filter: Optional[List[str]] = None) -> Optional[List[Dict[str, Any]]]:
         """List workspaces matching the provided criteria.
 
         Parameters correspond to the query arguments documented by the
@@ -583,11 +590,171 @@ class Topomojo:
                 uploaded_ids.extend(uploaded)
         return uploaded_ids
 
+    def upload_iso(self, iso_path: str, workspace_id: str, is_global: bool = False, wait: bool = False) -> Optional[Any]:
+        """Upload a file to a workspace. Non-ISO files are automatically
+        wrapped in an ISO 9660 container by the server after upload.
+
+        Parameters
+        ----------
+        iso_path: str
+            Path to the file to upload.
+        workspace_id: str
+            ID of the workspace to upload the file to.
+        is_global: bool, optional
+            When True, upload to the global/public bin instead of
+            the workspace bin. Defaults to False.
+        wait: bool, optional
+            When True, poll until the server has finished processing the
+            uploaded file before returning. Defaults to False.
+
+        Returns True on success. Raises TopomojoException on failure.
+
+        Raises: TopomojoException
+        """
+
+        self.logger.debug(f"Uploading ISO {iso_path} to workspace {workspace_id} (is_global={is_global})")
+
+        if not os.path.isfile(iso_path):
+            raise ValueError(f"iso_path must be a file, not a directory or missing path: {iso_path}")
+
+        url = f"{self.app_url}/api/file/upload"
+        size = os.path.getsize(iso_path)
+        monitor_key = str(uuid.uuid4()) if wait else None
+
+        params: Dict[str, Any] = {"size": size}
+        if not is_global:
+            params["group-key"] = workspace_id
+        if monitor_key:
+            params["monitor-key"] = monitor_key
+
+        # The server's multipart handler reads all form values from a single section body
+        # (parsed as URL-encoded). Sending params as separate sections (requests default)
+        # causes each one to overwrite the previous, so encode them all into one section.
+        encoded_params = urlencode(params)
+
+        filename = os.path.basename(iso_path)
+        with open(iso_path, "rb") as iso_file:
+            response = self.session.post(
+                url,
+                files=[
+                    ("data", (None, encoded_params, "text/plain")),
+                    ("file", (filename, iso_file)),
+                ],
+            )
+
+        if response.status_code != 200:
+            raise TopomojoException(response.status_code, response.text)
+
+        if wait and monitor_key:
+            progress_url = f"{self.app_url}/api/file/progress/{monitor_key}"
+            while True:
+                progress_response = self.session.get(progress_url)
+                if progress_response.status_code == 200:
+                    progress = self._json_or_none(progress_response)
+                    self.logger.debug(f"ISO upload progress: {progress}%")
+                    if progress is None or progress >= 100 or progress < 0:
+                        break
+                else:
+                    break
+                sleep(1)
+
+        return self._json_or_none(response)
+
+    def upload_directory(self, directory_path: str, workspace_id: str,
+                         is_global: bool = False, wait: bool = False,
+                         save_iso: Optional[str] = None) -> Optional[Any]:
+        """Pack a local directory into an ISO and upload it to a workspace.
+
+        Parameters
+        ----------
+        directory_path: str
+            Path to the directory to pack into an ISO.
+        workspace_id: str
+            ID of the workspace to upload the ISO to.
+        is_global: bool, optional
+            When True, upload to the global/public bin instead of the
+            workspace bin. Defaults to False.
+        wait: bool, optional
+            When True, poll until the server has finished processing the
+            uploaded file before returning. Defaults to False.
+        save_iso: str, optional
+            If provided, the generated ISO is written to this path and kept
+            after upload. If omitted, the ISO is written to a temporary file
+            and deleted after upload.
+
+        Returns True on success. Raises TopomojoException on failure.
+
+        Raises: TopomojoException
+        """
+
+        if not os.path.isdir(directory_path):
+            raise ValueError(f"directory_path must be a directory: {directory_path}")
+
+        if save_iso:
+            iso_output_path = save_iso
+            cleanup = False
+        else:
+            fd, iso_output_path = tempfile.mkstemp(suffix='.iso')
+            os.close(fd)
+            cleanup = True
+
+        self.logger.debug(f"Building ISO from directory {directory_path} -> {iso_output_path}")
+
+        def _iso9660_name(name: str, is_dir: bool) -> str:
+            """Sanitize a filename/dirname for ISO 9660 (uppercase, 8.3, A-Z0-9_ only)."""
+            name = name.upper()
+            name = re.sub(r'[^A-Z0-9_.]', '_', name)
+            if is_dir:
+                return name[:31]
+            base, _, ext = name.rpartition('.')
+            if not base:
+                base, ext = ext, ''
+            return (base[:8] + ('.' + ext[:3] if ext else '')) + ';1'
+
+        open_files: List[BytesIO] = []
+        iso = pycdlib.PyCdlib()  # type: ignore[attr-defined]
+        iso.new(joliet=3)
+
+        try:
+            for root, dirs, files in os.walk(directory_path):
+                rel_root = os.path.relpath(root, directory_path)
+
+                if rel_root == '.':
+                    iso9660_dir = '/'
+                    joliet_dir = '/'
+                else:
+                    parts = rel_root.replace(os.sep, '/').split('/')
+                    iso9660_dir = '/' + '/'.join(_iso9660_name(p, True) for p in parts)
+                    joliet_dir = '/' + '/'.join(parts)
+                    iso.add_directory(iso9660_dir, joliet_path=joliet_dir)
+
+                for filename in files:
+                    file_path = os.path.join(root, filename)
+                    with open(file_path, 'rb') as f:
+                        data = f.read()
+                    fp = BytesIO(data)
+                    open_files.append(fp)
+                    iso9660_file = iso9660_dir.rstrip('/') + '/' + _iso9660_name(filename, False)
+                    joliet_file = joliet_dir.rstrip('/') + '/' + filename
+                    iso.add_fp(fp, len(data), iso_path=iso9660_file, joliet_path=joliet_file)
+
+            iso.write(iso_output_path)
+        finally:
+            iso.close()
+
+        self.logger.debug(f"ISO written to {iso_output_path}, uploading")
+
+        try:
+            return self.upload_iso(iso_output_path, workspace_id, is_global=is_global, wait=wait)
+        finally:
+            if cleanup:
+                os.remove(iso_output_path)
+
     ################################## GAMESPACE FUNCTIONS#####################################################################################
 
-    def get_gamespaces(self, WantsAll: bool = None, WantsActive: bool = None,
-                       Term: str = None, Skip: int = None, Take: int = None,
-                       Sort: str = None, Filter: List[str] = None) -> Optional[Any]:
+    def get_gamespaces(self, WantsAll: Optional[bool] = None, WantsActive: Optional[bool] = None,
+                       Term: Optional[str] = None, Skip: Optional[int] = None, Take: Optional[int] = None,
+                       Sort: Optional[str] = None, Filter: Optional[List[str]] = None) -> Optional[Any]:
         """List gamespaces available to the user.
 
         Parameters correspond to the query arguments documented by the
