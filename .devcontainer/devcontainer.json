@@ -17,7 +17,9 @@
     // AWS credentials for Claude Code (optional)
     "source=${localWorkspaceFolder}/.devcontainer/.aws,target=/home/vscode/.aws,type=bind",
     // Claude Code data (sessions, history, todos, etc.)
-    "source=pytopomojo-claude,target=/home/vscode/.claude,type=volume"
+    "source=pytopomojo-claude,target=/home/vscode/.claude,type=volume",
+    // TopoMojo API source
+    "source=pytopomojo-topomojo-api,target=/mnt/topomojo-api,type=volume"
   ],
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1",
