@@ -7,7 +7,7 @@
 import argparse
 import json
 from pathlib import Path
-from typing import Iterable, List, Set
+from typing import Any, Iterable, List, Optional, Set
 
 from pytopomojo import Topomojo, TopomojoException
 
@@ -31,11 +31,7 @@ def load_workspace_ids(path: Path) -> List[str]:
 def fetch_workspace_template_ids(client: Topomojo, workspace_id: str) -> List[str]:
     """Load the workspace and return the template IDs it references."""
 
-    response = client.session.get(f"{client.app_url}/api/workspace/{workspace_id}")
-    if response.status_code != 200:
-        raise TopomojoException(response.status_code, response.text)
-
-    workspace = response.json() or {}
+    workspace = client.get_workspace(workspace_id) or {}
     template_entries: Iterable[dict] = (
         workspace.get("templates") or workspace.get("templateLinks") or []
     )
@@ -56,11 +52,14 @@ def normalize_disk_path(path: str) -> str:
     """Strip datastore prefixes so the same disk matches across templates."""
 
     prefix = "ds://"
-    return path[len(prefix) :] if path.startswith(prefix) else path
+    return path[len(prefix):] if path.startswith(prefix) else path
 
 
-def extract_disks_from_detail(template_detail: dict) -> Set[str]:
+def extract_disks_from_detail(template_detail: Optional[Any]) -> Set[str]:
     """Return disk paths referenced by a template detail payload."""
+
+    if not template_detail:
+        return set()
 
     detail_payload = template_detail.get("detail")
     if not detail_payload:

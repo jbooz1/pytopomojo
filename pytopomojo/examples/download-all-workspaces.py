@@ -3,8 +3,10 @@
 # Arguments:
 #   --output-directory (-o): Directory to save downloaded workspaces. Defaults to the current directory.
 
-from pytopomojo import Topomojo, TopomojoException
-import os, argparse
+import argparse
+import os
+
+from pytopomojo import Topomojo
 
 parser = argparse.ArgumentParser(description="Download TopoMojo workspaces")
 parser.add_argument(
@@ -17,10 +19,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 topomojo = Topomojo("https://example.com/topomojo", "<put your API Key here>")
 
-workspaces = topomojo.get_workspaces()
-
-workspace_guids = [w["id"] for w in workspaces]
-workspace_slugs = [w["slug"] for w in workspaces]
+workspaces = topomojo.get_workspaces() or []
 
 for workspace in workspaces:
     output_path = os.path.join(output_dir, f"{workspace['slug']}.zip")
