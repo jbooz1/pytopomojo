@@ -1,0 +1,67 @@
+name: Publish Docs
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Set version from tag
+        if: github.event_name == 'release'
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "Setting version to $VERSION"
+          sed -i "s|^version = .*|version = \"$VERSION\"|" pyproject.toml
+
+      - name: Install package with docs extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+
+      - name: Build docs with pdoc
+        run: |
+          MODULES=$(python -c "import pkgutil, pytopomojo; \
+            print(' '.join(['pytopomojo'] + \
+              [f'pytopomojo.{m.name}' for m in pkgutil.iter_modules(pytopomojo.__path__) \
+               if not m.name.startswith('_')]))")
+          echo "Documenting: $MODULES"
+          pdoc -o ./site -d google $MODULES
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

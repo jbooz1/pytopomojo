@@ -35,9 +35,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     ca-certificates \
     curl \
     gnupg \
-    build-essential \
-    nodejs \
-    npm
+    build-essential
+
+# Install Node.js 20.x from NodeSource
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs
 
 COPY pytopomojo/requirements.txt /tmp/pip-build/requirements.txt
 

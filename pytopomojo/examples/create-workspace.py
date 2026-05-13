@@ -1,4 +1,4 @@
-# This script will: 
+# This script will:
 # 1. Create a new workspace
 # 2. Search for published templates matching a keyword
 # 3. Add the template to the workspace, unlink and initialize it
@@ -10,14 +10,24 @@ topomojo = Topomojo("https://example.com/topomojo", "<put your API Key here>")
 
 # Create a new workspace
 new_workspace = topomojo.create_workspace({"name": "Example Workspace"})
+if not new_workspace:
+    raise RuntimeError("Failed to create workspace")
 
 # Search for the published kali template and add it to the workspace
-kali_template = topomojo.get_templates(Term="kali", Filter="published")[0]
-new_kali_template = topomojo.new_workspace_template({"workspaceId": new_workspace['id'], "templateId": kali_template['id']})
+templates = topomojo.get_templates(Term="kali", Filter=["published"]) or []
+if not templates:
+    raise RuntimeError("No published kali templates found")
+kali_template = templates[0]
+
+new_kali_template = topomojo.new_workspace_template(
+    {"workspaceId": new_workspace["id"], "templateId": kali_template["id"]}
+)
+if not new_kali_template:
+    raise RuntimeError("Failed to add template to workspace")
 
 # unlink and initialize template
-topomojo.unlink_template({"workspaceId": new_workspace['id'], "templateId": new_kali_template['id']})
-topomojo.initialize_template(new_kali_template['id'])
+topomojo.unlink_template({"workspaceId": new_workspace["id"], "templateId": new_kali_template["id"]})
+topomojo.initialize_template(new_kali_template["id"])
 
 # deploy vm
-topomojo.deploy_vm_from_template(new_kali_template['id'])
+topomojo.deploy_vm_from_template(new_kali_template["id"])

@@ -44,3 +44,8 @@ Publishing is handled by `.github/workflows/publish.yaml`. On a GitHub release, 
 ## Examples
 
 `pytopomojo/examples/` contains usage scripts demonstrating workspace creation, template management, batch uploads, and bulk downloads. These serve as both documentation and integration-level smoke tests.
+
+
+## Rules
+
+Never make any commits or pushes to the repository without explicit permission to do so.
