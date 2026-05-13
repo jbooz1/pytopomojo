@@ -1,3 +1,5 @@
+"""Workspace favorites API endpoints."""
+
 from typing import Any, Optional
 
 from ._base import _TopomojoBase

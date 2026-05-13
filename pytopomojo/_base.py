@@ -1,3 +1,9 @@
+"""Shared base class for the TopoMojo client.
+
+`_TopomojoBase` owns the session, authentication headers, and the
+internal request helpers that the public endpoint mixins build on.
+"""
+
 import logging
 import os
 from typing import Any, Literal, Optional
@@ -13,18 +19,15 @@ class _TopomojoBase:
     """Shared state for the Topomojo client and its endpoint mixins."""
 
     def __init__(self, app_url: Optional[str] = None, api_key: Optional[str] = None, debug: bool = False) -> None:
-        """Create a new :class:`Topomojo` client.
+        """Create a new `Topomojo` client.
 
-        Parameters
-        ----------
-        app_url: str, optional
-            Base URL to the TopoMojo application (e.g. ``https://example.com/topomojo``).
-            Falls back to the ``TOPOMOJO_URL`` environment variable if not provided.
-        api_key: str, optional
-            API key used for authentication.
-            Falls back to the ``TOPOMOJO_API_KEY`` environment variable if not provided.
-        debug: bool, optional
-            When ``True`` debug logging is enabled.
+        Args:
+            app_url: Base URL to the TopoMojo application
+                (e.g. `https://example.com/topomojo`). Falls back to the
+                `TOPOMOJO_URL` environment variable if not provided.
+            api_key: API key used for authentication. Falls back to the
+                `TOPOMOJO_API_KEY` environment variable if not provided.
+            debug: When `True`, debug logging is enabled.
         """
 
         resolved_url = app_url if app_url is not None else os.environ.get("TOPOMOJO_URL")

@@ -1,3 +1,5 @@
+"""Workspace API endpoints and file upload helpers."""
+
 import os
 import re
 import uuid
@@ -158,21 +160,18 @@ class WorkspaceMixin(_TopomojoBase):
         return self._request("DELETE", f"/api/workspace/{workspace_id}/worker/{subject_id}")
 
     def upload_iso(self, iso_path: str, workspace_id: str, is_global: bool = False, wait: bool = False) -> Optional[Any]:
-        """Upload a file to a workspace. Non-ISO files are automatically
-        wrapped in an ISO 9660 container by the server after upload.
+        """Upload a file to a workspace.
 
-        Parameters
-        ----------
-        iso_path: str
-            Path to the file to upload.
-        workspace_id: str
-            ID of the workspace to upload the file to.
-        is_global: bool, optional
-            When True, upload to the global/public bin instead of
-            the workspace bin. Defaults to False.
-        wait: bool, optional
-            When True, poll until the server has finished processing the
-            uploaded file before returning. Defaults to False.
+        Non-ISO files are automatically wrapped in an ISO 9660 container
+        by the server after upload.
+
+        Args:
+            iso_path: Path to the file to upload.
+            workspace_id: ID of the workspace to upload the file to.
+            is_global: When `True`, upload to the global/public bin
+                instead of the workspace bin.
+            wait: When `True`, poll until the server has finished
+                processing the uploaded file before returning.
         """
 
         size = os.path.getsize(iso_path)
@@ -218,22 +217,16 @@ class WorkspaceMixin(_TopomojoBase):
                          save_iso: Optional[str] = None) -> Optional[Any]:
         """Pack a local directory into an ISO and upload it to a workspace.
 
-        Parameters
-        ----------
-        directory_path: str
-            Path to the directory to pack into an ISO.
-        workspace_id: str
-            ID of the workspace to upload the ISO to.
-        is_global: bool, optional
-            When True, upload to the global/public bin instead of the
-            workspace bin. Defaults to False.
-        wait: bool, optional
-            When True, poll until the server has finished processing the
-            uploaded file before returning. Defaults to False.
-        save_iso: str, optional
-            If provided, the generated ISO is written to this path and kept
-            after upload. If omitted, the ISO is written to a temporary file
-            and deleted after upload.
+        Args:
+            directory_path: Path to the directory to pack into an ISO.
+            workspace_id: ID of the workspace to upload the ISO to.
+            is_global: When `True`, upload to the global/public bin
+                instead of the workspace bin.
+            wait: When `True`, poll until the server has finished
+                processing the uploaded file before returning.
+            save_iso: If provided, the generated ISO is written to this
+                path and kept after upload. If omitted, the ISO is
+                written to a temporary file and deleted after upload.
         """
 
         if not os.path.isdir(directory_path):

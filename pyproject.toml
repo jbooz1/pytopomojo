@@ -14,3 +14,11 @@ dependencies = [
     "requests>=2.25",
     "pycdlib>=1.14",
 ]
+
+[project.optional-dependencies]
+docs = ["pdoc>=15"]
+
+[project.urls]
+Homepage = "https://github.com/jbooz1/pytopomojo"
+Documentation = "https://jbooz1.github.io/pytopomojo/"
+Source = "https://github.com/jbooz1/pytopomojo"

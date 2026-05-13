@@ -1,3 +1,6 @@
+"""Custom exception raised by the TopoMojo client."""
+
+
 class TopomojoException(Exception):
     """Exception raised when the TopoMojo API returns an error."""
 

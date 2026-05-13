@@ -1,3 +1,5 @@
+"""VM API endpoints (lifecycle, reconfiguration, console access)."""
+
 from typing import Any, Dict, Optional
 
 from ._base import _TopomojoBase

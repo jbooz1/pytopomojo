@@ -1,3 +1,5 @@
+"""Template API endpoints (CRUD, linking, initialization, VM deployment)."""
+
 from time import sleep
 from typing import Any, Dict, List, Optional
 

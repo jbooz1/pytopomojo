@@ -1,3 +1,5 @@
+"""Dispatch API endpoints (remote command execution records)."""
+
 from typing import Any, Dict, List, Optional
 
 from ._base import _TopomojoBase

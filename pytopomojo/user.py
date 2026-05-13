@@ -1,3 +1,5 @@
+"""User API endpoints (profiles, scopes, API keys, tickets)."""
+
 from typing import Any, Dict, List, Optional
 
 from ._base import _TopomojoBase

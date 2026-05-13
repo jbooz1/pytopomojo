@@ -1,3 +1,5 @@
+"""Document API endpoints (workspace markdown docs and attached images)."""
+
 from typing import Any, Optional
 
 from ._base import _TopomojoBase

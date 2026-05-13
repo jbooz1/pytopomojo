@@ -1,3 +1,5 @@
+"""Admin API endpoints (announcements, import/export, janitor, theme assets)."""
+
 from typing import Any, Dict, List, Optional
 
 from ._base import _TopomojoBase

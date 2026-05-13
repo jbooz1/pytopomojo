@@ -1,3 +1,5 @@
+"""Theme API endpoints (application branding)."""
+
 from typing import Any, Optional
 
 from ._base import _TopomojoBase

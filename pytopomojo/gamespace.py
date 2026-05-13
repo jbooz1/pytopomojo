@@ -1,3 +1,5 @@
+"""Gamespace API endpoints (registration, state, players, grading)."""
+
 from typing import Any, Dict, List, Optional
 
 from ._base import _TopomojoBase
